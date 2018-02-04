@@ -1,55 +1,86 @@
-# base
+# hello-wordpress
 
-A blank template to be used as a starting point to build projects on Hasura. A "project" is a "gittable" directory in the file system, which captures all the information regarding clusters, services and migrations. It can also be used to keep source code for custom services that you write.
+git push and deploy a Wordpress website with free HTTPS domain.
 
-## Files and Directories
+This project is a Wordpress installation with MySQL which can be deployed to the cloud using Hasura's free hosting tier. Immediately get a HTTPS domain and access to Wordpress admin dashboard. Custom domain can be deployed with simple `git push` and HTTPS is added automatically.
 
-The project (a.k.a. project directory) has a particular directory structure and it has to be maintained strictly, else `hasura` cli would not work as expected. A representative project is shown below:
+## What's included?
 
-```
-.
-├── hasura.yaml
-├── clusters.yaml
-├── conf
-│   ├── authorized-keys.yaml
-│   ├── auth.yaml
-│   ├── ci.yaml
-│   ├── domains.yaml
-│   ├── filestore.yaml
-│   ├── gateway.yaml
-│   ├── http-directives.conf
-│   ├── notify.yaml
-│   ├── postgres.yaml
-│   ├── routes.yaml
-│   └── session-store.yaml
-├── migrations
-│   ├── 1504788327_create_table_userprofile.down.yaml
-│   ├── 1504788327_create_table_userprofile.down.sql
-│   ├── 1504788327_create_table_userprofile.up.yaml
-│   └── 1504788327_create_table_userprofile.up.sql
-└── microservices 
-    ├── adminer
-    │   └── k8s.yaml
-    └── flask
-        ├── src/
-        ├── k8s.yaml
-        └── Dockerfile
+- Wordpress website with free HTTPS domain
+- MySQL database
+
+## Quickstart
+
+```bash
+# quickstart from this project
+$ hasura quickstart hello-wordpress
+$ cd hello-wordpress
 ```
 
-### `hasura.yaml`
+The quickstart command does the following:
 
-This file contains some metadata about the project, namely a name, description and some keywords. Also contains `platformVersion` which says which Hasura platform version is compatible with this project.
+- Creates a new directory `hello-wordpress` in the current working directory
+- Creates a free Hasura cluster and sets it as the default for this project
+- Sets up a git repository and adds hasura remote to push code
+- Adds your SSH public key to the cluster so that you can push to it
 
-### `clusters.yaml`
+### Set MySQL password
 
-Info about the clusters added to this project can be found in this file. Each cluster is defined by it's name allotted by Hasura. While adding the cluster to the project you are prompted to give an alias, which is just hasura by default. The `kubeContext` mentions the name of kubernetes context used to access the cluster, which is also managed by hasura. The `config` key denotes the location of cluster's metadata on the cluster itself. This information is parsed and cluster's metadata is appended while conf is rendered. `data` key is for holding custom variables that you can define.
+```bash
 
-```yaml
-- name: h34-ambitious93-stg
-  alias: hasura
-  kubeContext: h34-ambitious93-stg
-  config:
-    configmap: controller-conf
-    namespace: hasura
-  data: null  
+# set a password for mysql database
+$ hasura secrets update mysql.password [secure-password]
+# verify the password
+$ hasura secrets list
+
+```
+
+### Deploy
+
+```bash
+# git push to deploy
+$ git add . && git commit -m "First commit"
+$ git push hasura master
+```
+
+Once deployed, access the website using the following command:
+
+```bash
+# open wordpress website in a browser
+$ hasura microservice open wordpress
+```
+
+## Viewing server logs
+
+```bash
+# see status of microservices
+$ hasura microservice list
+
+# get logs for wordpress
+$ hasura microservice logs wordpress
+```
+
+## Adding a custom domain
+
+A custom domain can be added in 3 easy steps. Hasura provides free SSL certificates using [LetsEncrypt](https://letsencrypt.org/).
+
+Checkout [Custom domains & SSL on Hasura Docs](https://docs.hasura.io/0.15/manual/gateway/custom-domains-ssl.html) for complete instructions.
+
+## Accessing files on the cluster
+
+To get a shell inside Wordpress microservice, use [hasura microservice exec](https://docs.hasura.io/0.15/manual/hasuractl/hasura_microservice_exec.html):
+
+```bash
+$ hasura microservice exec -it wordpress -- bash
+root@wordpress-2112168164-p91qj:/var/www/html#
+```
+
+To copy files to and from the microservice, use [hasura microservice copy](https://docs.hasura.io/0.15/manual/hasuractl/hasura_microservice_cp.html):
+
+```bash
+# copy wp-config.php from the microservice to your system:
+$ hasura ms cp wordpress:/var/www/html/wp-config.php wp-config.php
+
+# copy wp-config.php from your system to the microservice:
+$ hasura ms cp wp-config.php wordpress:/var/www/html/wp-config.php
 ```
