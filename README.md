@@ -75,7 +75,7 @@ $ hasura microservice exec -it wordpress -- bash
 root@wordpress-2112168164-p91qj:/var/www/html#
 ```
 
-To copy files to and from the microservice, use [hasura microservice copy](https://docs.hasura.io/0.15/manual/hasuractl/hasura_microservice_cp.html):
+To copy files to and from the microservice, use [hasura microservice copy](https://docs.hasura.io/0.15/manual/hasuractl/hasura_microservice_copy.html):
 
 ```bash
 # copy wp-config.php from the microservice to your system:
